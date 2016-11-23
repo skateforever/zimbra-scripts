@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 DATE=`date`
 LOCK=/tmp/check_spam.lock
 if [ -f ${LOCK} ]; then
