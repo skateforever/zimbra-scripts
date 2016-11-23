@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#!/bin/bash
+
+DATE=`date`
+LOCK=/tmp/check_spam.lock
+if [ -f ${LOCK} ]; then
+    exit 0
+else
+     touch $LOCK
+     echo "[$DATE] Ativando/Reativando Sincronia de Senhas entre o Zimbra e o Samba ..." >> /var/log/zpasswdsync.log
+     su - zimbra -c "ldap stop"
+     sleep 2
+     su - zimbra -c "ldap start"
+     sleep 2
+     su - zimbra -c "zmprov modifyConfig zimbraPasswordChangeListener sambapassword"
+     sleep 2
+     echo "[$DATE] Reiniciando o Zimbra para que as alteracoes tenham efeito ..." >> /var/log/zpasswdsync.log
+     su - zimbra -c "ldap stop"
+     sleep 2
+     su - zimbra -c "ldap start"
+     echo "[$DATE] Sincronia de senhas ativada/reativada!" >> /var/log/zpasswdsync.log
+     rm -f $LOCK
+fi
