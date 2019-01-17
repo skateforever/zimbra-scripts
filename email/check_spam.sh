@@ -4,7 +4,7 @@
 #                                                                                                              #
 # Autor: Leandro Carvalho                                                                                      #
 # Contato: carvalho.inacio@gmail.com                                                                           #
-# Versao: 2019.01.16 / Quarta                                                                                  #
+# Versao: 2019.01.17 / Quinta                                                                                  #
 #                                                                                                              #
 # Função:                                                                                                      #
 #                                                                                                              #
@@ -31,6 +31,7 @@
 # Atualizado para adicionar na descrição da conta o motivo do bloqueio                                         #
 # Ajuste de variaveis para setar o dominio em um único local                                                   #
 # Ajuste de variaveis para definicao dos comandos da versao do zimbra                                          #
+# Ajuste para permitir utilização em zimbra com vários domínios                                                #
 #                                                                                                              #
 ################################################################################################################
 
@@ -58,15 +59,12 @@ else
 fi
 
 COUNT=0
-DOMAIN=
-DOMAIN_MAIL=mail.${DOMAIN}
 IP_INT=
 IP_EXT=
 QTD_EMAILS=$(${POSTQUEUE} -p | grep -c -E "^[A-Z0-9]")
-QTD_USER_EMAILS=($(${POSTQUEUE} -p | grep -E "^[A-Z0-9]" | grep -E '@${DOMAIN}|@${DOMAIN_MAIL}|MAILER-DAEMON' | awk '{print $7}' | sort | uniq -c | awk '{print $1}'))
-USUARIOS=($(${POSTQUEUE} -p | grep -E "^[A-Z0-9]" | grep -E '@${DOMAIN}|@${DOMAIN_MAIL}|MAILER-DAEMON' | awk '{print $7}' | sort | uniq -c | awk '{print $2}'))
+QTD_USER_EMAILS=($(${POSTQUEUE} -p | grep -E "^[A-Z0-9]" | awk '{print $7}' | sort | uniq -c | awk '{print $1}'))
+USUARIOS=($(${POSTQUEUE} -p | grep -E "^[A-Z0-9]" | awk '{print $7}' | sort | uniq -c | awk '{print $2}'))
 CHECK_SPAM_LOG=/var/log/check_spam-${DATA}.log
-LOCK=/tmp/check_spam.lock
 DTSMAIL=()
 BLOCKIP_FILE=/var/log/block_ips.txt
 
@@ -81,7 +79,7 @@ function get_id() {
 }
 
 function get_ip() {
-    IP=($(${POSTCAT} -q ${IDs[0]} | grep Received | grep -v "Received: from localhost (localhost [127.0.0.1])" | grep -v "Received: from ${DOMAIN_MAIL} ([127.0.0.1])" | grep -v "Received: from ${DOMAIN_MAIL} (${DOMAIN_MAIL} [${IP_EXT}])" | grep -v "Received: from ${DOMAIN_MAIL} (${DOMAIN_MAIL} [${IP_INT}])" | awk '{print $5}' | sed -e 's/\[//' -e 's/\]//' -e 's/)//' | grep -v 127.0.0.1 | grep -v ${IP_EXT} | grep -v ${IP_INT} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"))
+    IP=($(${POSTCAT} -q ${IDs[0]} | grep "Received: from" | grep -Ev "127.0.0.1|${IP_INT}|${IP_EXT}" | awk '{print $5}' | sed -e 's/\[//' -e 's/\]//' -e 's/)//' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"))
 }
 
 function remove_emails() {
@@ -141,29 +139,15 @@ if [[ ${QTD_EMAILS} -gt ${QTD_MAX} ]]; then
                     get_ip
                     block_ip
                     remove_emails
-                    ((COUNT += 1))
                 fi
             fi
         fi
     done
 
-    if [ $COUNT == 0 ] && [ ${QTD_EMAILS} -gt ${QTD_MAX} ]; then
-        echo "Nenhum usuario do zimbra enviando spam!"
-        echo "Limpando a fila de email..."
-
-        USUARIOS=($(${POSTQUEUE} -p | grep -E "^[A-Z0-9]" | grep -E -v '@${DOMAIN}|@${DOMAIN_MAIL}|MAILER-DAEMON' | awk '{print $7}' | sort | uniq -c | awk '{print $2}'))
-
-        for ((i = 0 ; i < ${#USUARIOS[@]} ; i++)); do
-           IDs=($(${POSTQUEUE} -p | grep -E "^[A-Z0-9]" | grep "${USUARIOS[${i}]}" | awk '{print $1}' | sed 's/\*//g'))
-           if [ ${#IDs[@]} -gt 10 ]; then
-              get_ip
-              block_ip
-              remove_emails
-           fi
-        done
-    else
+    if [ $COUNT == 0 ]; then
         echo "Nenhum usuario do zimbra enviando spam!"
     fi
+
 fi
 ) > ${CHECK_SPAM_LOG} 2>&1
 if [ -s ${CHECK_SPAM_LOG} ]; then
