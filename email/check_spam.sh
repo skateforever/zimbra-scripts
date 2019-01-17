@@ -48,7 +48,7 @@ else
 fi
 
 ZIMBRA_VERSION=8
-if [ "${ZIMBRA_VERSION}" -lt "7" ]; then
+if [ "${ZIMBRA_VERSION}" -le "7" ]; then
     POSTQUEUE=/opt/zimbra/postfix/sbin/postqueue
     POSTCAT=/opt/zimbra/postfix/sbin/postcat
     POSTSUPER=/opt/zimbra/postfix/sbin/postsuper
