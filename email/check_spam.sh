@@ -32,7 +32,7 @@ else
     QTD_SPAM=25
 fi
 
-if [ ${ZIMBRA_VERSION} <= 7 ]; then
+if (( ${ZIMBRA_VERSION} <= 7 )); then
     POSTQUEUE=/opt/zimbra/postfix/sbin/postqueue
     POSTCAT=/opt/zimbra/postfix/sbin/postcat
     POSTSUPER=/opt/zimbra/postfix/sbin/postsuper
@@ -81,7 +81,7 @@ function block_ip() {
 }
 
 (
-if [[ ${QTD_EMAILS} > ${QTD_MAX} ]]; then
+if (( ${QTD_EMAILS} > ${QTD_MAX} )); then
     echo "O numero de emails ativos (${QTD_EMAILS}) esta acima do limite estipulado (${QTD_MAX})."
     echo "Verificando se existe algum usuario enviando spam..."
     for ((i = 0 ; i < ${#USUARIOS[@]} ; i++)); do
@@ -92,7 +92,7 @@ if [[ ${QTD_EMAILS} > ${QTD_MAX} ]]; then
                 ((COUNT ++))
             else
                 su - zimbra -c "zmprov ga ${USUARIOS[${i}]} mail > /dev/null 2>&1"
-                if [ $? == 0 ]; then
+                if (( $? == 0 )); then
                     SENHA=$(tr -d -c 'A-Za-z0-9' < /dev/urandom | head -c 12)
                     echo "Mudando a senha do usuario ${USUARIOS[${i}]} para ${SENHA}."
                     su - zimbra -c "zmprov sp ${USUARIOS[${i}]} ${SENHA}"
@@ -122,7 +122,7 @@ if [[ ${QTD_EMAILS} > ${QTD_MAX} ]]; then
         fi
     done
 
-    if [ ${COUNT} == 0 ]; then
+    if (( ${COUNT} == 0 )); then
         echo "Nenhum usuario do zimbra enviando spam!"
     fi
 
