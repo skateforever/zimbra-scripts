@@ -101,7 +101,8 @@ if (( ${QTD_EMAILS} > ${QTD_MAX} )); then
                         #echo "Mudando o status da conta de ativo para manutencao..."
                         #su - zimbra "zmprov ma ${USUARIOS[${i}]} zimbraAccountStatus ${ACCOUNT_STATUS}"
                         echo "Informando na descricao do usuario o motivo da mudanca..."
-                        su - zimbra -c "zmprov ma ${USUARIOS[${i}]} description \"SPAM\" zimbraNotes \"Esta conta foi modificada pois estava enviando SPAM as ${DATA_zimbraNotes}, senha modificada pra ${SENHA}.\""
+                        su - zimbra -c "zmprov ma ${USUARIOS[${i}]} description \"SPAM\""
+                        su - zimbra -c "zmprov ma ${USUARIOS[${i}]} zimbraNotes \"Esta conta foi modificada pois estava enviando SPAM as ${DATA_zimbraNotes}, senha modificada pra ${SENHA}.\""
                         get_id
                         get_ip
                         block_ip
