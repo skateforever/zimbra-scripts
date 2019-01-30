@@ -85,8 +85,8 @@ if (( ${QTD_EMAILS} > ${QTD_MAX} )); then
     echo "O numero de emails ativos (${QTD_EMAILS}) esta acima do limite estipulado (${QTD_MAX})."
     echo "Verificando se existe algum usuario enviando spam..."
     for ((i = 0 ; i < ${#USUARIOS[@]} ; i++)); do
-        if [ ${QTD_USER_EMAILS[${i}]} > ${QTD_SPAM} ]; then
-            if [ "${USUARIOS[${i}]}" == "MAILER-DAEMON" ]; then
+        if (( ${QTD_USER_EMAILS[${i}]} > ${QTD_SPAM} )); then
+            if (( "${USUARIOS[${i}]}" == "MAILER-DAEMON" )); then
                 get_id
                 remove_emails
                 ((COUNT ++))
@@ -102,7 +102,7 @@ if (( ${QTD_EMAILS} > ${QTD_MAX} )); then
                         #su - zimbra "zmprov ma ${USUARIOS[${i}]} zimbraAccountStatus ${ACCOUNT_STATUS}"
                         echo "Informando na descricao do usuario o motivo da mudanca..."
                         su - zimbra -c "zmprov ma ${USUARIOS[${i}]} description \"SPAM\""
-                        su - zimbra -c "zmprov ma ${USUARIOS[${i}]} zimbraNotes \"Esta conta foi modificada pois estava enviando SPAM as ${DATA_zimbraNotes}, senha modificada pra ${SENHA}.\""
+                        su - zimbra -c "zmprov ma ${USUARIOS[${i}]} zimbraNotes \"Conta enviando SPAM as ${DATA_zimbraNotes}, senha modificada pra ${SENHA}.\""
                         get_id
                         get_ip
                         block_ip
@@ -129,7 +129,7 @@ if (( ${QTD_EMAILS} > ${QTD_MAX} )); then
 
 fi
 ) > ${CHECK_SPAM_LOG} 2>&1
-if [ -s ${CHECK_SPAM_LOG} ]; then
+if (( -s ${CHECK_SPAM_LOG} )); then
     cat ${CHECK_SPAM_LOG} | strings | mail -s 'Verifica SPAM - "${DATA}"' "${DTSMAIL[@]}"
 else
     rm -f ${CHECK_SPAM_LOG}
