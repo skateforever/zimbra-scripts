@@ -24,7 +24,7 @@ WHITELIST=""
 # Fechada: closed
 ACCOUNT_STATUS="maintenance"
 
-if [[ "$DIA" == "Sat" || "$DIA" == "Sun" ]]; then
+if (( "$DIA" == "Sat" || "$DIA" == "Sun" )); then
     QTD_MAX=30
     QTD_SPAM=5
 else
@@ -44,7 +44,7 @@ fi
 
 QTD_EMAILS=$(${POSTQUEUE} -p | grep -c -E "^[A-Z0-9]")
 
-if [ -z ${WHITELIST} ]; then
+if (( -z ${WHITELIST} )); then
     QTD_USER_EMAILS=($(${POSTQUEUE} -p | grep -E "^[A-Z0-9]" | awk '{print $7}' | sort | uniq -c | awk '{print $1}'))
     USUARIOS=($(${POSTQUEUE} -p | grep -E "^[A-Z0-9]" | awk '{print $7}' | sort | uniq -c | awk '{print $2}'))
 else
@@ -96,7 +96,7 @@ if (( ${QTD_EMAILS} > ${QTD_MAX} )); then
                     SENHA=$(tr -d -c 'A-Za-z0-9' < /dev/urandom | head -c 12)
                     echo "Mudando a senha do usuario ${USUARIOS[${i}]} para ${SENHA}."
                     su - zimbra -c "zmprov sp ${USUARIOS[${i}]} ${SENHA}"
-                    if [ $? == 0 ]; then
+                    if (( $? == 0 )); then
                         # Caso queira mudar o status da conta, descomentar o comando abaixo e informar na descrição a mudança de status da conta
                         #echo "Mudando o status da conta de ativo para manutencao..."
                         #su - zimbra "zmprov ma ${USUARIOS[${i}]} zimbraAccountStatus ${ACCOUNT_STATUS}"
