@@ -24,7 +24,7 @@ WHITELIST=""
 # Fechada: closed
 ACCOUNT_STATUS="maintenance"
 
-if (( "$DIA" == "Sat" || "$DIA" == "Sun" )); then
+if [[ "$DIA" == "Sat" || "$DIA" == "Sun" ]]; then
     QTD_MAX=30
     QTD_SPAM=5
 else
@@ -44,7 +44,7 @@ fi
 
 QTD_EMAILS=$(${POSTQUEUE} -p | grep -c -E "^[A-Z0-9]")
 
-if (( -z ${WHITELIST} )); then
+if [ -z ${WHITELIST} ]; then
     QTD_USER_EMAILS=($(${POSTQUEUE} -p | grep -E "^[A-Z0-9]" | awk '{print $7}' | sort | uniq -c | awk '{print $1}'))
     USUARIOS=($(${POSTQUEUE} -p | grep -E "^[A-Z0-9]" | awk '{print $7}' | sort | uniq -c | awk '{print $2}'))
 else
@@ -69,7 +69,7 @@ function remove_emails() {
 }
 
 function block_ip() {
-    if (( ! -z ${IP} )); then
+    if [ ! -z ${IP} ]; then
         /sbin/iptables -t filter -I INPUT -s $IP -j DROP
         /sbin/iptables -t filter -I OUTPUT -d $IP -j DROP
         echo "O usuario ${USUARIOS[${i}]} estava enviando spam, verificar o que esta acontecendo."
@@ -86,7 +86,7 @@ if (( ${QTD_EMAILS} > ${QTD_MAX} )); then
     echo "Verificando se existe algum usuario enviando spam..."
     for ((i = 0 ; i < ${#USUARIOS[@]} ; i++)); do
         if (( ${QTD_USER_EMAILS[${i}]} > ${QTD_SPAM} )); then
-            if (( "${USUARIOS[${i}]}" == "MAILER-DAEMON" )); then
+            if [[ "${USUARIOS[${i}]}" == "MAILER-DAEMON" ]]; then
                 get_id
                 remove_emails
                 ((COUNT ++))
@@ -129,7 +129,7 @@ if (( ${QTD_EMAILS} > ${QTD_MAX} )); then
 
 fi
 ) > ${CHECK_SPAM_LOG} 2>&1
-if (( -s ${CHECK_SPAM_LOG} )); then
+if [ -s ${CHECK_SPAM_LOG} ]; then
     cat ${CHECK_SPAM_LOG} | strings | mail -s 'Verifica SPAM - "${DATA}"' "${DTSMAIL[@]}"
 else
     rm -f ${CHECK_SPAM_LOG}
