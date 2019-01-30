@@ -69,7 +69,7 @@ function remove_emails() {
 }
 
 function block_ip() {
-    if [ ! -z ${IP} ]; then
+    if (( ! -z ${IP} )); then
         /sbin/iptables -t filter -I INPUT -s $IP -j DROP
         /sbin/iptables -t filter -I OUTPUT -d $IP -j DROP
         echo "O usuario ${USUARIOS[${i}]} estava enviando spam, verificar o que esta acontecendo."
