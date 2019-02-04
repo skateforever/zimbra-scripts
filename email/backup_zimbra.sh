@@ -73,7 +73,6 @@ if [ "${DAY_OF_WEEK}" == "Sun" ]; then
     echo "Validando o backup..."
     for USER in $(su - zimbra -c "zmprov -l gaa | sort | grep -vE \"^spam|^virus|^hal|^galsync|^zmbackup|^ldap\""); do
         if ls -lha -I. -I.. "${BACKUP_FULLDIR}"/ | grep "${USER}"; then
-        #if (( $? != 0 )); then
             su - zimbra -c "zmmailbox -z -m ${USER} getRestURL '/?fmt=tgz' > ${BACKUP_FULLDIR}/${USER}-full-${DATA}.tgz" 2> /dev/null
             sleep 2
         fi
