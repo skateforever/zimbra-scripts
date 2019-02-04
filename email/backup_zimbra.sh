@@ -70,6 +70,15 @@ if [ "${DAY_OF_WEEK}" == "Sun" ]; then
         sleep 2
     done
 
+    echo "Validando o backup..."
+    for USER in $(su - zimbra -c "zmprov -l gaa | sort | grep -vE \"^spam|^virus|^hal|^galsync|^zmbackup|^ldap\""); do
+        ls -lha -I. -I.. ${BACKUP_FULLDIR}/ | grep "${USER}"
+        if (( $? != 0 )); then
+            su - zimbra -c "zmmailbox -z -m ${USER} getRestURL '/?fmt=tgz' > ${BACKUP_FULLDIR}/${USER}-full-${DATA}.tgz" 2> /dev/null
+            sleep 2
+        fi
+    done
+
     echo "$(date "+%H:%M") Limpando backups vazios..."
     find ${BACKUP_FULLDIR}/ -type f -empty -exec rm -f {} \+
 else
@@ -83,6 +92,15 @@ else
         sleep 2
     done
 
+    echo "Validando o backup..."
+    for USER in $(su - zimbra -c "zmprov -l gaa | sort | grep -vE \"^spam|^virus|^hal|^galsync|^zmbackup|^ldap\""); do
+        ls -lha -I. -I.. ${BACKUP_FULLDIR}/ | grep "${USER}"
+        if (( $? != 0 )); then
+            su - zimbra -c "zmmailbox -z -m ${USER} getRestURL '/?fmt=tgz&query=after:\"${TWODAYSAGO}\" and before:\"${TODAY}\"' > ${BACKUP_INCDIR}/${USER}-${YESTERDAY}.tgz" 2> /dev/null
+            sleep 2
+        fi
+    done
+
     echo "$(date "+%H:%M") Limpando backups vazios..."
     find ${BACKUP_INCDIR}/ -type f -empty -exec rm -f {} \+
 fi
@@ -90,5 +108,5 @@ fi
 echo "Backup finalizado as $(date "+%H:%M")!"
 ) >> ${BACKUP_LOG}
 
-find /mnt/backup/zimbra/ -mtime +8 -type d -execdir rm -rf {} \+
+find /mnt/backup/zimbra/ -mtime +30 -type d -execdir rm -rf {} \+
 find /var/log/zimbra_backup-* -mtime +7 -type f -exec rm -rf {} \+
