@@ -72,7 +72,7 @@ if [ "${DAY_OF_WEEK}" == "Sun" ]; then
 
     echo "Validando o backup..."
     for USER in $(su - zimbra -c "zmprov -l gaa | sort | grep -vE \"^spam|^virus|^hal|^galsync|^zmbackup|^ldap\""); do
-        if ! ls -lha -I. -I.. /mnt/backup/zimbra/full-20190127/ | grep "${USER}" > /dev/null 2>&1; then
+        if ! ls -lha -I. -I.. "${BACKUP_FULLDIR}"/ | grep "${USER}" > /dev/null 2>&1; then
             su - zimbra -c "zmmailbox -z -m ${USER} getRestURL '/?fmt=tgz' > ${BACKUP_FULLDIR}/${USER}-full-${DATA}.tgz" 2> /dev/null
             sleep 2
         fi
@@ -93,7 +93,7 @@ else
 
     echo "Validando o backup..."
     for USER in $(su - zimbra -c "zmprov -l gaa | sort | grep -vE \"^spam|^virus|^hal|^galsync|^zmbackup|^ldap\""); do
-        if ! ls -lha -I. -I.. /mnt/backup/zimbra/full-20190127/ | grep "${USER}" > /dev/null 2>&1; then
+        if ! ls -lha -I. -I.. "${BACKUP_INCDIR}"/ | grep "${USER}" > /dev/null 2>&1; then
             su - zimbra -c "zmmailbox -z -m ${USER} getRestURL '/?fmt=tgz&query=after:\"${TWODAYSAGO}\" and before:\"${TODAY}\"' > ${BACKUP_INCDIR}/${USER}-${YESTERDAY}.tgz" 2> /dev/null
             sleep 2
         fi
