@@ -2,7 +2,6 @@
 
 IP_INT=""
 IP_EXT=""
-
 data_LOG=$(date +%Y-%m-%d)
 access_LOG=/opt/zimbra/log/access_log.${data_LOG}
 BLOCKIP_FILE=/var/log/block_ips.txt
