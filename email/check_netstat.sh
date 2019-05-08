@@ -2,6 +2,7 @@
 
 IP_INT=""
 IP_EXT=""
+BLOCKIP_FILE=/var/log/block_ips.txt
 
 for IP in $(netstat -napult | grep -v "Conex" | grep -v "Remoto" | awk '{print $5}' | grep -v ":::*" | grep -v "0.0.0.0:*" | grep -v "127.0.0.1" | grep -v ${IP_INT} | grep -v ${IP_EXT} | cut -d ":" -f 1); do
     PAIS=$(geoiplookup ${IP} | awk '{print $5}')
@@ -12,7 +13,7 @@ for IP in $(netstat -napult | grep -v "Conex" | grep -v "Remoto" | awk '{print $
             if [[ ! $(grep ${IP} ${BLOCKIP_FILE}) ]]; then
                 iptables -I INPUT -s ${IP} -j DROP
                 iptables -I OUTPUT -d ${IP} -j DROP
-                echo "${IP}" >> /var/log/block_ips.txt
+                echo "${IP}" >> ${BLOCKIP_FILE}
                 kill -15 ${kill_PROCESSO} 2> /dev/null
             fi    
         fi
