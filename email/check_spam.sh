@@ -64,19 +64,23 @@ function remove_emails() {
     echo "O ${USUARIOS[${i}]} tentou enviar ${#IDs[@]} spams."
     echo "Deletando os spams..."
     for ID in "${IDs[@]}"; do
-        ${POSTSUPER} -d "${ID}" > /dev/null
+        ${POSTSUPER} -d "${ID}" > /dev/null 2>&1
     done
 }
 
 function block_ip() {
     if [ ! -z ${IP} ]; then
-        /sbin/iptables -t filter -I INPUT -s $IP -j DROP
-        /sbin/iptables -t filter -I OUTPUT -d $IP -j DROP
-        echo "O usuario ${USUARIOS[${i}]} estava enviando spam, verificar o que esta acontecendo."
-        echo "Adicione o ip $IP no alias do firewall."
-        echo "${IP}" >> ${BLOCKIP_FILE}
-        geoiplookup ${IP}
-        sed -i '/^\s*$/d' ${BLOCKIP_FILE}
+        if [[ ! $(grep ${IP} ${BLOCKIP_FILE}) ]]; then
+            /sbin/iptables -t filter -I INPUT -s $IP -j DROP
+            /sbin/iptables -t filter -I OUTPUT -d $IP -j DROP
+            echo "O usuario ${USUARIOS[${i}]} estava enviando spam, verificar o que esta acontecendo."
+            echo "Adicione o ip $IP no alias do firewall."
+            echo "${IP}" >> ${BLOCKIP_FILE}
+            geoiplookup ${IP}
+            sed -i '/^\s*$/d' ${BLOCKIP_FILE}
+        else
+            echo "IP ja existe na lista de bloqueio, por favor verificar o que esta acontecendo."
+        fi
     fi
 }
 
@@ -122,11 +126,9 @@ if (( ${QTD_EMAILS} > ${QTD_MAX} )); then
             fi
         fi
     done
-
     if (( ${COUNT} == 0 )); then
         echo "Nenhum usuario do zimbra enviando spam!"
     fi
-
 fi
 ) > ${CHECK_SPAM_LOG} 2>&1
 if [ -s ${CHECK_SPAM_LOG} ]; then
