@@ -1,6 +1,9 @@
 #!/bin/bash
 
-for IP in $(netstat -napult | grep -v "Conex" | grep -v "Remoto" | awk '{print $5}' | grep -v 192.168 | grep -v ":::*" | grep -v "0.0.0.0:*" | grep -v "127.0.0.1" | grep -v "10.84" | grep -v "186.231.20.79" | grep -v "10.1." | cut -d ":" -f 1); do
+IP_INT=""
+IP_EXT=""
+
+for IP in $(netstat -napult | grep -v "Conex" | grep -v "Remoto" | awk '{print $5}' | grep -v ":::*" | grep -v "0.0.0.0:*" | grep -v "127.0.0.1" | grep -v ${IP_INT} | grep -v ${IP_EXT} | cut -d ":" -f 1); do
     PAIS=$(geoiplookup ${IP} | awk '{print $5}')
     if [[ "${PAIS}" != "Brazil" ]]; then
         PORTA_DESTINO=$(netstat -npulta | grep ${IP} | awk '{print $5}' | cut -d ":" -f 2)
